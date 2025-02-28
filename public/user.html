@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+  <title>User page</title>
+</head>
+<body>
+<div class="flex flex-col m-auto" style="width: 80%;">
+  <h1 class="text-3xl mb-2">Пользовательская панель</h1>
+
+  <div id="result"></div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+<script>
+    $.ajax({
+        url: '/products',
+        method: 'get',
+        success: (data) => {
+            console.log(data);
+            let productsRowsHTML = '';
+            for (const category in data) {
+                productsRowsHTML += `<h2 class="text-2xl">${category}</h2>`;
+                productsRowsHTML += '<div class="flex gap-2">';
+                for (const product of data[category]) {
+                    productsRowsHTML += '<div class="flex flex-col border gap-" style="width: 30%">'
+                    productsRowsHTML += `<p>Название: ${product.name}</p>`;
+                    productsRowsHTML += `<p>Цена: ${product.price} руб.</p>`;
+                    productsRowsHTML += `<p>Описание: ${product.description}</p>`;
+                    productsRowsHTML += '</div>'
+                }
+                productsRowsHTML += '</div>'
+            }
+
+            $('#result').wrapInner(productsRowsHTML);
+        }
+    });
+
+</script>
+</body>
+</html>

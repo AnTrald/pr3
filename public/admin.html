@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+  <title>Admin page</title>
+</head>
+<body>
+<div class="flex flex-col m-auto" style="width: 80%;">
+  <h1 class="text-3xl mb-2">Админ панель</h1>
+
+  <div class="flex flex-col">
+    <h2 class="mt-3 text-xl">Категории</h2>
+    <div class="flex justify-between gap-3">
+      <table class="border-collapse border border-slate-500 w-full h-auto" id="categoryTable">
+        <thead>
+        <tr>
+          <th class="border border-slate-600">Id</th>
+          <th class="border border-slate-600">Название</th>
+          <th class="border border-slate-600"></th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <form class="flex flex-col w-full" id="categoryForm">
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="categoryId">
+            ID изменяемой категории
+          </label>
+          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="categoryId" type="number" placeholder="Введите ID категории если хотите изменить её">
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="categoryName">
+            Название категории
+          </label>
+          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="categoryName" type="text" placeholder="Название категории">
+        </div>
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+          Сохранить
+        </button>
+      </form>
+    </div>
+
+    <h2 class="mt-3 text-xl">Продукты</h2>
+    <div class="flex justify-between gap-3">
+      <table class="border-collapse border border-slate-500 w-full h-auto" id="productsTable">
+        <thead>
+        <tr>
+          <th class="border border-slate-600">Id</th>
+          <th class="border border-slate-600">Название</th>
+          <th class="border border-slate-600">Цена</th>
+          <th class="border border-slate-600">Описание</th>
+          <th class="border border-slate-600">Категории</th>
+          <th class="border border-slate-600"></th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <form class="flex flex-col w-full" id="productForm">
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="productId">
+            ID изменяемого продукта
+          </label>
+          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productId" type="number" placeholder="Введите ID продукта если хотите изменить его">
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="productName">
+            Название продукта
+          </label>
+          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productName" type="text" placeholder="Название продукта">
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="productPrice">
+            Цена продукта
+          </label>
+          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productPrice" type="number" placeholder="Цена продукта">
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="productDescription">
+            Описание продукта
+          </label>
+          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productDescription" type="text" placeholder="Описание продукта">
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="productCategories">
+            Категории продукта (через запятую)
+          </label>
+          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productCategories" type="text" placeholder="ID категорий через запятую">
+        </div>
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+          Сохранить
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+<script>
+    function productDeleteClick(productId) {
+        $.ajax({
+            url: `/products/${productId}`,
+            method: 'delete',
+            success: () => {
+                location.reload();
+            },
+        });
+    }
+
+    function categoryDeleteClick(categoryId) {
+        $.ajax({
+            url: `/categories/${categoryId}`,
+            method: 'delete',
+            success: () => {
+                location.reload();
+            },
+        });
+    }
+
+    let products, categories;
+    $.ajax({
+        url: '/products',
+        method: 'get',
+        success: (data) => {
+            products = data;
+            let productsRowsHTML = '';
+            for (const product of products) {
+                productsRowsHTML += '<tr>'
+                productsRowsHTML += `<td class="border border-slate-600">${product.id}</td>`;
+                productsRowsHTML += `<td class="border border-slate-600">${product.name}</td>`;
+                productsRowsHTML += `<td class="border border-slate-600">${product.price}</td>`;
+                productsRowsHTML += `<td class="border border-slate-600">${product.description}</td>`;
+                productsRowsHTML += `<td class="border border-slate-600">${product.categories.join(', ')}</td>`;
+                productsRowsHTML += `<td class="border border-slate-600">
+                    <button class="del-product-btn bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button" onclick="productDeleteClick(${product.id})">Удалить</button>
+                  </td>`;
+                productsRowsHTML += '</tr>';
+            }
+            $('#productsTable tbody').html(productsRowsHTML);
+        }
+    });
+    $.ajax({
+        url: '/categories',
+        method: 'get',
+        success: (data) => {
+            categories = data;
+            let categoriesRowsHTML = '';
+            for (const category of categories) {
+                categoriesRowsHTML += '<tr>'
+                categoriesRowsHTML += `<td class="border border-slate-600">${category.id}</td>`;
+                categoriesRowsHTML += `<td class="border border-slate-600">${category.name}</td>`;
+                categoriesRowsHTML += `<td class="border border-slate-600">
+                    <button class="del-product-btn bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button" onclick="categoryDeleteClick(${category.id})">Удалить</button>
+                  </td>`;
+                categoriesRowsHTML += '</tr>';
+            }
+            $('#categoryTable tbody').html(categoriesRowsHTML);
+        }
+    });
+
+    $('#categoryForm').on('submit', (e) => {
+        e.preventDefault();
+        let categoryId, categoryName;
+        categoryId = $('#categoryId').val();
+        categoryName = $('#categoryName').val();
+
+        if (categoryId) {
+            $.ajax({
+                url: `/categories/${categoryId}`,
+                method: 'put',
+                data: JSON.stringify({
+                    name: categoryName,
+                }),
+                contentType: 'application/json',
+                success: () => {
+                    location.reload();
+                }
+            });
+            return;
+        }
+
+        $.ajax({
+            url: '/categories',
+            method: 'post',
+            data: JSON.stringify({
+                name: categoryName,
+            }),
+            contentType: 'application/json',
+            success: () => {
+                location.reload();
+            }
+        });
+    });
+
+    $('#productForm').on('submit', (e) => {
+        e.preventDefault();
+        let productId, productName, productPrice, productDescription, productCategories;
+        productId = $('#productId').val();
+        productName = $('#productName').val();
+        productPrice = $('#productPrice').val();
+        productDescription = $('#productDescription').val();
+        productCategories = $('#productCategories').val().split(',').map(id => parseInt(id.trim()));
+
+        if (productId) {
+            $.ajax({
+                url: `/products/${productId}`,
+                method: 'put',
+                data: JSON.stringify({
+                    name: productName,
+                    price: productPrice,
+                    description: productDescription,
+                    categories: productCategories,
+                }),
+                contentType: 'application/json',
+                success: () => {
+                    location.reload();
+                }
+            });
+            return;
+        }
+
+        $.ajax({
+            url: '/products',
+            method: 'post',
+            data: JSON.stringify({
+                name: productName,
+                price: productPrice,
+                description: productDescription,
+                categories: productCategories,
+            }),
+            contentType: 'application/json',
+            success: () => {
+                location.reload();
+            }
+        });
+    });
+</script>
+</body>
+</html>
