@@ -4,14 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <title>User page</title>
+  <style>
+      body {
+          font-family: 'Inter', sans-serif;
+      }
+  </style>
 </head>
-<body>
-<div class="flex flex-col m-auto" style="width: 80%;">
-  <h1 class="text-3xl mb-2">Пользовательская панель</h1>
+<body class="bg-gray-50">
+<div class="flex flex-col m-auto py-8" style="width: 80%;">
+  <div class="flex justify-between">
+    <h1 class="text-4xl font-bold text-gray-800 mb-6">Панель Пользователя</h1>
+    <div class="float-right mt-2 ms-2">
+      <img src="https://i.pinimg.com/736x/07/01/1e/07011eccd1f3c45d149441de527aa693.jpg" height="80" width="80" alt="Лого" style="border: #888888 1px solid; border-radius: 3px;">
+      <p>Котенок</p>
+    </div>
+  </div>
 
-  <div id="result"></div>
+  <div id="result" class="space-y-6"></div>
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 <script>
@@ -22,14 +33,15 @@
             console.log(data);
             let productsRowsHTML = '';
             for (const category in data) {
-                productsRowsHTML += `<h2 class="text-2xl pb-2">${category}</h2>`;
-                productsRowsHTML += '<div class="flex gap-2">';
+                productsRowsHTML += `<h2 class="text-2xl font-semibold text-gray-700 pb-4">${category}</h2>`;
+                productsRowsHTML += '<div class="flex gap-6 flex-wrap">';
                 for (const product of data[category]) {
-                    productsRowsHTML += '<div class="flex flex-col border bg-blue-100 border-2 rounded-sm p-2" style="width: 30%">'
-                    productsRowsHTML += `<p>Название: ${product.name}</p>`;
-                    productsRowsHTML += `<p>Цена: ${product.price} руб.</p>`;
-                    productsRowsHTML += `<p>Описание: ${product.description}</p>`;
-                    productsRowsHTML += '</div>'
+                    productsRowsHTML += `
+                    <div class="flex flex-col bg-white border border-gray-200 rounded-lg shadow-sm p-4" style="width: 30%;">
+                        <p class="text-gray-700 font-medium">Название: <span class="font-normal">${product.name}</span></p>
+                        <p class="text-gray-700 font-medium">Цена: <span class="font-normal">${product.price} руб.</span></p>
+                        <p class="text-gray-700 font-medium">Описание: <span class="font-normal">${product.description}</span></p>
+                    </div>`;
                 }
                 productsRowsHTML += '</div>'
             }
@@ -37,7 +49,6 @@
             $('#result').wrapInner(productsRowsHTML);
         }
     });
-
 </script>
 </body>
 </html>
