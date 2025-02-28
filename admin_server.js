@@ -1,14 +1,18 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const fs = require('fs');
-const swaggerJsDoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
 
 const app = express();
+app.use(express.static('public'))
+
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/public/admin.html')
+})
+
 const PORT = 3000;
 
-app.use(express.static('public'));
-app.use(bodyParser.json());
+const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+const fs = require('fs')
 
 // Swagger документация
 const swaggerOptions = {
@@ -19,218 +23,166 @@ const swaggerOptions = {
             version: '1.0.0',
             description: 'API для управления задачами',
         },
-        servers: [{ url: `http://localhost:${PORT}` }],
+        servers: [
+            {
+                url: `http://localhost:${PORT}`,
+            },
+        ],
     },
-    apis: ['openapi.yaml'],
+    apis: ['openapi.yaml'], // укажите путь к файлам с аннотациями
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// Получить список товаров
+
+// Middleware для парсинга JSON
+app.use(bodyParser.json());
+
+
+// Получить список данных
 app.get('/products', (req, res) => {
-    fs.readFile('./data.json', 'utf-8', (err, data) => {
-        if (err) {
-            return res.status(500).json({ message: 'Ошибка чтения файла' });
-        }
-        const jsonData = JSON.parse(data);
+    fs.readFile('./data.json', 'utf-8', function(err, data) {
+        if (err) throw err
+
+        let jsonData = JSON.parse(data);
         res.json(jsonData.products);
     });
 });
 
-// Получить список категорий
 app.get('/categories', (req, res) => {
-    fs.readFile('./data.json', 'utf-8', (err, data) => {
-        if (err) {
-            return res.status(500).json({ message: 'Ошибка чтения файла' });
-        }
-        const jsonData = JSON.parse(data);
+    fs.readFile('./data.json', 'utf-8', function(err, data) {
+        if (err) throw err
+
+        let jsonData = JSON.parse(data);
         res.json(jsonData.categories);
     });
 });
 
-// Создать новый товар
+// Создать новый объект
 app.post('/products', (req, res) => {
-    const { name, price, description, categories } = req.body;
+    const { name, price, description, categoryIds } = req.body;
+    const newProduct = {
+        id: 0,
+        name: name,
+        price: price,
+        description: description,
+        categoryIds: categoryIds,
+    };
+    fs.readFile('./data.json', 'utf-8', function(err, data) {
+        if (err) throw err
 
-    fs.readFile('./data.json', 'utf-8', (err, data) => {
-        if (err) {
-            return res.status(500).json({ message: 'Ошибка чтения файла' });
+        let jsonData = JSON.parse(data);
+        if (categoryIds.some((el) => jsonData.categories.find(t => parseInt(t.id) === parseInt(el)) === undefined)) {
+            res.status(404).json({ message: 'Category not found.' });
+            return;
         }
-
-        const jsonData = JSON.parse(data);
-
-        // Проверка, что все категории существуют
-        const invalidCategories = categories.filter(
-            catId => !jsonData.categories.some(cat => cat.id === catId)
-        );
-        if (invalidCategories.length > 0) {
-            return res.status(404).json({ message: `Категории не найдены: ${invalidCategories.join(', ')}` });
-        }
-
-        const newProduct = {
-            id: jsonData.products.length + 1,
-            name,
-            price,
-            description,
-            categories,
-        };
-
+        newProduct.id = jsonData.products.length + 1;
         jsonData.products.push(newProduct);
-
-        fs.writeFile('./data.json', JSON.stringify(jsonData), 'utf-8', (err) => {
-            if (err) {
-                return res.status(500).json({ message: 'Ошибка записи файла' });
-            }
-            res.status(201).json(newProduct);
+        fs.writeFile('./data.json', JSON.stringify(jsonData), 'utf-8', function(err) {
+            if (err) throw err;
         });
     });
+    res.status(201).json(newProduct);
 });
-
-// Создать новую категорию
 app.post('/categories', (req, res) => {
     const { name } = req.body;
+    const newCategory = {
+        id: 0,
+        name: name,
+    };
+    fs.readFile('./data.json', 'utf-8', function(err, data) {
+        if (err) throw err
 
-    fs.readFile('./data.json', 'utf-8', (err, data) => {
-        if (err) {
-            return res.status(500).json({ message: 'Ошибка чтения файла' });
-        }
-
-        const jsonData = JSON.parse(data);
-        const newCategory = {
-            id: jsonData.categories.length + 1,
-            name,
-        };
-
+        let jsonData = JSON.parse(data);
+        newCategory.id = jsonData.categories.length + 1;
         jsonData.categories.push(newCategory);
-
-        fs.writeFile('./data.json', JSON.stringify(jsonData), 'utf-8', (err) => {
-            if (err) {
-                return res.status(500).json({ message: 'Ошибка записи файла' });
-            }
-            res.status(201).json(newCategory);
+        fs.writeFile('./data.json', JSON.stringify(jsonData), 'utf-8', function(err) {
+            if (err) throw err;
         });
     });
+    res.status(201).json(newCategory);
 });
 
-// Обновить товар по ID
+// Обновить объекты по ID
 app.put('/products/:id', (req, res) => {
     const productId = parseInt(req.params.id);
-    const { name, price, description, categories } = req.body;
+    fs.readFile('./data.json', 'utf-8', function(err, data) {
+        if (err) throw err
 
-    fs.readFile('./data.json', 'utf-8', (err, data) => {
-        if (err) {
-            return res.status(500).json({ message: 'Ошибка чтения файла' });
-        }
-
-        const jsonData = JSON.parse(data);
-        const product = jsonData.products.find(p => p.id === productId);
-
-        if (!product) {
-            return res.status(404).json({ message: 'Товар не найден' });
-        }
-
-        // Проверка, что все категории существуют
-        const invalidCategories = categories.filter(
-            catId => !jsonData.categories.some(cat => cat.id === catId)
-        );
-        if (invalidCategories.length > 0) {
-            return res.status(404).json({ message: `Категории не найдены: ${invalidCategories.join(', ')}` });
-        }
-
-        product.name = name !== undefined ? name : product.name;
-        product.price = price !== undefined ? price : product.price;
-        product.description = description !== undefined ? description : product.description;
-        product.categories = categories !== undefined ? categories : product.categories;
-
-        fs.writeFile('./data.json', JSON.stringify(jsonData), 'utf-8', (err) => {
-            if (err) {
-                return res.status(500).json({ message: 'Ошибка записи файла' });
+        let jsonData = JSON.parse(data);
+        const product = jsonData.products.find(t => t.id === productId);
+        if (product) {
+            const { name, price, description, categoryIds } = req.body;
+            product.name = name !== undefined ? name : product.title;
+            product.price = price !== undefined ? price : product.price;
+            product.description = description !== undefined ? description : product.description;
+            product.categoryIds = categoryIds !== undefined ? categoryIds : product.categoryIds;
+            if (categoryIds.some((el) => jsonData.categories.find(t => parseInt(t.id) === parseInt(el)) === undefined)) {
+                res.status(404).json({ message: 'Category not found.' });
+                return;
             }
+            fs.writeFile('./data.json', JSON.stringify(jsonData), 'utf-8', function(err) {
+                if (err) throw err;
+            });
             res.json(product);
-        });
+        } else {
+            res.status(404).json({ message: 'Product not found' });
+        }
     });
 });
 
-// Обновить категорию по ID
 app.put('/categories/:id', (req, res) => {
     const categoryId = parseInt(req.params.id);
-    const { name } = req.body;
+    fs.readFile('./data.json', 'utf-8', function(err, data) {
+        if (err) throw err
 
-    fs.readFile('./data.json', 'utf-8', (err, data) => {
-        if (err) {
-            return res.status(500).json({ message: 'Ошибка чтения файла' });
-        }
-
-        const jsonData = JSON.parse(data);
-        const category = jsonData.categories.find(c => c.id === categoryId);
-
-        if (!category) {
-            return res.status(404).json({ message: 'Категория не найдена' });
-        }
-
-        category.name = name !== undefined ? name : category.name;
-
-        fs.writeFile('./data.json', JSON.stringify(jsonData), 'utf-8', (err) => {
-            if (err) {
-                return res.status(500).json({ message: 'Ошибка записи файла' });
-            }
+        let jsonData = JSON.parse(data);
+        const category = jsonData.categories.find(t => t.id === categoryId);
+        if (category) {
+            const { name } = req.body;
+            category.name = name !== undefined ? name : category.title;
+            fs.writeFile('./data.json', JSON.stringify(jsonData), 'utf-8', function(err) {
+                if (err) throw err;
+            });
             res.json(category);
-        });
+        } else {
+            res.status(404).json({ message: 'Category not found' });
+        }
     });
 });
 
-// Удалить товар по ID
+// Удалить объект по ID
 app.delete('/products/:id', (req, res) => {
     const productId = parseInt(req.params.id);
+    fs.readFile('./data.json', 'utf-8', function(err, data) {
+        if (err) throw err
 
-    fs.readFile('./data.json', 'utf-8', (err, data) => {
-        if (err) {
-            return res.status(500).json({ message: 'Ошибка чтения файла' });
-        }
-
-        const jsonData = JSON.parse(data);
-        jsonData.products = jsonData.products.filter(p => p.id !== productId);
-
-        fs.writeFile('./data.json', JSON.stringify(jsonData), 'utf-8', (err) => {
-            if (err) {
-                return res.status(500).json({ message: 'Ошибка записи файла' });
-            }
-            res.status(204).send();
+        let jsonData = JSON.parse(data);
+        jsonData.products = jsonData.products.filter(t => t.id !== productId);
+        fs.writeFile('./data.json', JSON.stringify(jsonData), 'utf-8', function(err) {
+            if (err) throw err;
         });
     });
+    res.status(204).send();
 });
 
-// Удалить категорию по ID
 app.delete('/categories/:id', (req, res) => {
     const categoryId = parseInt(req.params.id);
+    fs.readFile('./data.json', 'utf-8', function(err, data) {
+        if (err) throw err
 
-    fs.readFile('./data.json', 'utf-8', (err, data) => {
-        if (err) {
-            return res.status(500).json({ message: 'Ошибка чтения файла' });
-        }
-
-        const jsonData = JSON.parse(data);
-
-        // Удаляем категорию из списка категорий
-        jsonData.categories = jsonData.categories.filter(c => c.id !== categoryId);
-
-        // Удаляем категорию из всех товаров
-        jsonData.products = jsonData.products.map(p => ({
-            ...p,
-            categories: p.categories.filter(catId => catId !== categoryId),
-        }));
-
-        fs.writeFile('./data.json', JSON.stringify(jsonData), 'utf-8', (err) => {
-            if (err) {
-                return res.status(500).json({ message: 'Ошибка записи файла' });
-            }
-            res.status(204).send();
+        let jsonData = JSON.parse(data);
+        jsonData.products = jsonData.products.filter(t => !t.categoryIds.includes(categoryId));
+        jsonData.categories = jsonData.categories.filter(t => t.id !== categoryId);
+        fs.writeFile('./data.json', JSON.stringify(jsonData), 'utf-8', function(err) {
+            if (err) throw err;
         });
     });
+    res.status(204).send();
 });
 
 // Запуск сервера
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log("Server is running on http://localhost:", PORT);
 });

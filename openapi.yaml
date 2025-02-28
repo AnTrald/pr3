@@ -26,8 +26,10 @@ paths:
                       type: integer
                     description:
                       type: string
-                    categoryId:
-                      type: integer
+                    categoryIds:
+                      type: array
+                      items:
+                        type: integer
 
     post:
       summary: Создать новый продукт
@@ -44,8 +46,10 @@ paths:
                   type: integer
                 description:
                   type: string
-                categoryId:
-                  type: integer
+                categoryIds:
+                  type: array
+                  items:
+                    type: integer
       responses:
         '201':
           description: Продукт создан
@@ -83,8 +87,10 @@ paths:
                   type: integer
                 description:
                   type: string
-                categoryId:
-                  type: integer
+                categoryIds:
+                  type: array
+                  items:
+                    type: integer
       responses:
         '200':
           description: Продукт обновлен

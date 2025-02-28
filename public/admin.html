@@ -52,7 +52,7 @@
           <th class="border border-slate-600">Название</th>
           <th class="border border-slate-600">Цена</th>
           <th class="border border-slate-600">Описание</th>
-          <th class="border border-slate-600">Категории</th>
+          <th class="border border-slate-600">ID категорий</th>
           <th class="border border-slate-600"></th>
         </tr>
         </thead>
@@ -84,10 +84,10 @@
           <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productDescription" type="text" placeholder="Описание продукта">
         </div>
         <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2" for="productCategories">
-            Категории продукта (через запятую)
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="productCategoryIds">
+            ID категорий продукта
           </label>
-          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productCategories" type="text" placeholder="ID категорий через запятую">
+          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productCategoryIds" type="text" placeholder="ID категорий продукта через запятую (к примеру 42,13)">
         </div>
         <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
           Сохранить
@@ -131,13 +131,13 @@
                 productsRowsHTML += `<td class="border border-slate-600">${product.name}</td>`;
                 productsRowsHTML += `<td class="border border-slate-600">${product.price}</td>`;
                 productsRowsHTML += `<td class="border border-slate-600">${product.description}</td>`;
-                productsRowsHTML += `<td class="border border-slate-600">${product.categories.join(', ')}</td>`;
+                productsRowsHTML += `<td class="border border-slate-600">${product.categoryIds}</td>`;
                 productsRowsHTML += `<td class="border border-slate-600">
                     <button class="del-product-btn bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button" onclick="productDeleteClick(${product.id})">Удалить</button>
                   </td>`;
                 productsRowsHTML += '</tr>';
             }
-            $('#productsTable tbody').html(productsRowsHTML);
+            $('#productsTable tbody').wrapInner(productsRowsHTML);
         }
     });
     $.ajax({
@@ -155,7 +155,7 @@
                   </td>`;
                 categoriesRowsHTML += '</tr>';
             }
-            $('#categoryTable tbody').html(categoriesRowsHTML);
+            $('#categoryTable tbody').wrapInner(categoriesRowsHTML);
         }
     });
 
@@ -195,12 +195,12 @@
 
     $('#productForm').on('submit', (e) => {
         e.preventDefault();
-        let productId, productName, productPrice, productDescription, productCategories;
+        let productId, productName, productPrice, productDescription, productCategoryIds;
         productId = $('#productId').val();
         productName = $('#productName').val();
         productPrice = $('#productPrice').val();
         productDescription = $('#productDescription').val();
-        productCategories = $('#productCategories').val().split(',').map(id => parseInt(id.trim()));
+        productCategoryIds = $('#productCategoryIds').val().split(',').map((i) => parseInt(i, 10));
 
         if (productId) {
             $.ajax({
@@ -210,7 +210,7 @@
                     name: productName,
                     price: productPrice,
                     description: productDescription,
-                    categories: productCategories,
+                    categoryIds: productCategoryIds,
                 }),
                 contentType: 'application/json',
                 success: () => {
@@ -227,7 +227,7 @@
                 name: productName,
                 price: productPrice,
                 description: productDescription,
-                categories: productCategories,
+                categoryIds: productCategoryIds,
             }),
             contentType: 'application/json',
             success: () => {
@@ -235,6 +235,7 @@
             }
         });
     });
+
 </script>
 </body>
 </html>

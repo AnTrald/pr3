@@ -9,11 +9,20 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "body-parser": "^1.20.3",
     "express": "^4.21.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnTrald/pr3.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AnTrald/pr3/issues"
+  },
+  "homepage": "https://github.com/AnTrald/pr3#readme",
+  "description": ""
 }
